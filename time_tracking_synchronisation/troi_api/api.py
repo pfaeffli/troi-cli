@@ -4,7 +4,7 @@ from typing import List, Optional, Tuple, Generic
 
 from requests.auth import HTTPBasicAuth
 
-from troi.client.hours import create_billing_hour_payload
+from .hours import create_billing_hour_payload
 
 
 class Client:

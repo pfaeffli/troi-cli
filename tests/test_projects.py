@@ -1,9 +1,10 @@
 import unittest
 
 import pandas as pd
-from troi.projects import get_all_positions
 
-from tests.tools.MockApiClient import MockClient, ProjectState
+from tests.tools.mock_api_client import MockClient
+from time_tracking_synchronisation.troi_api.projects import get_all_positions, ProjectState, SUBPOSITION_NAME, \
+    SUBPOSITION_ID, SUBPROJECT_NAME, SUBPROJECT_ID, PROJECT_STATE, PROJECT_NAME, PROJECT_ID
 
 
 class ProjectsTestCase(unittest.TestCase):
@@ -18,15 +19,31 @@ class ProjectsTestCase(unittest.TestCase):
             position_id=111,
             position_name="position_subproject1"
         )
+        self.client.setup_add_calc_pos(
+            project_id=2,
+            subproject_id=21,
+            subproject_name="subproject2",
+            position_id=211,
+            position_name="position_subproject2"
+        )
 
     def test_list_projects(self):
         expected_df = pd.DataFrame(
             {
-
-            }
+                PROJECT_ID: [2],
+                PROJECT_NAME: ["project2"],
+                PROJECT_STATE: [ProjectState.open.value],
+                SUBPROJECT_ID: [21],
+                SUBPROJECT_NAME: ["subproject2"],
+                SUBPOSITION_ID: [211],
+                SUBPOSITION_NAME: ["position_subproject2"],
+            },
+            index=[0]
         )
-        projects = self.client.list_projects(client_id=1)
-        self.assertEqual(len(projects), 1)
+        projects = get_all_positions(client=self.client)
+        self.assertEqual(1, projects.shape[0])
+        compare = expected_df.compare(projects)
+        self.assertTrue(compare.empty)
 
 
 

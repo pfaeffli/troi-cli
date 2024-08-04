@@ -7,7 +7,7 @@ FROM $CI_OPENAPI_GENERATOR_IMAGE AS generator
 
 # Assuming you have your recommender-api-v1/openapi-specification.yml in the same directory as your Dockerfile.
 COPY recommender-api-v1/ /local/recommender-api-v1/
-# Generate openapi client
+# Generate openapi time_tracking_synchronisation-api
 RUN bash /usr/local/bin/docker-entrypoint.sh generate -i /local/recommender-api-v1/openapi-specification.yml -g python -o local/openapi
 
 # Stage 2: Use the Python base image
