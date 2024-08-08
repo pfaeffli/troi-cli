@@ -1,24 +1,55 @@
 from datetime import datetime
+from typing import Optional
+
+import pandas as pd
+
+import time_tracking_synchronisation.troi_api.api as constants
+import time_tracking_synchronisation.troi_api.projects as proj_constants
+from time_tracking_synchronisation.troi_api.api import Client
+
+BILLING_HOUR_EMPLOYEE_ID = "user_id"
+BILLING_HOUR_DATE = "billing_date"
+BILLING_HOUR_QUANTITY = "quantity"
+BILLING_HOUR_TAGS = "tags"
+BILLING_HOUR_ANNOTATION = "annotation"
 
 
-def create_billing_hour_payload(client_id: int, user_id: int, task_id: int, date: datetime, hours: float,
-                                remark: str) -> dict:
-    billing_hour = {
-        "Date": date.strftime("%Y-%m-%d"),
-        "Quantity": hours,
-        "Remark": remark,
-        "Employee": {
-            "Id": user_id,
-            "Path": f"/employees/{user_id}"
-        },
-        "CalculationPosition": {
-            "Id": task_id,
-            "Path": f"/calculationPositions/{task_id}"
-        },
-        "Client": {
-            "Id": client_id,
-            "Id1": client_id,
-            "Path": f"/clients/{client_id}"
-        }
-    }
-    return billing_hour
+def get_billing_hours(
+        client: Client,
+        project_id: int,
+        date_from: datetime,
+        date_to: Optional[datetime] = None,
+        client_id: int = 3,
+        user_id: Optional[int] = None,
+        position_id: Optional[int] = None,
+) -> pd.DataFrame:
+    content, error = client.list_billing_hours(
+        client_id=client_id,
+        project_id=project_id,
+        date_from=date_from,
+        date_to=date_to if date_to else datetime.now(),
+    )
+    if content is None:
+        raise error
+
+    df = pd.DataFrame([pd.Series(r) for r in content])
+    # df[proj_constants.CLIENT_ID] = df[proj_constants.TROI_CLIENT][proj_constants.TROI_CLIENT_ID]
+    df[proj_constants.SUBPOSITION_ID] = df[constants.TROI_BILLING_HOUR_CALCULATION_POSITION].apply(lambda x: x[
+        constants.TROI_BILLING_HOUR_CALCULATION_POSITION_ID])
+    df[BILLING_HOUR_EMPLOYEE_ID] = df[constants.TROI_BILLING_HOUR_EMPLOYEE].apply(
+        lambda x: x[constants.TROI_BILLING_HOUR_EMPLOYEE_ID])
+    df[BILLING_HOUR_DATE] = pd.to_datetime(df[constants.TROI_BILLING_HOUR_DATE])
+    df[BILLING_HOUR_QUANTITY] = df[constants.TROI_BILLING_HOUR_QUANTITY]
+    tags_annotation = df[constants.TROI_BILLING_HOUR_REMARK].apply(
+        lambda x: str(x).split('@', maxsplit=1) if x is not None else ("", ""))
+    df[BILLING_HOUR_TAGS] = tags_annotation.apply(lambda x: str(x[0]).strip() if x is not None else "")
+    df[BILLING_HOUR_ANNOTATION] = tags_annotation.apply(lambda x: x[1] if len(x) > 1 else "")
+    reduced_df = df.loc[:,
+           [proj_constants.SUBPOSITION_ID, BILLING_HOUR_EMPLOYEE_ID, BILLING_HOUR_DATE, BILLING_HOUR_QUANTITY,
+            BILLING_HOUR_TAGS, BILLING_HOUR_ANNOTATION]]
+    filter_cond = [True]*reduced_df.shape[0]
+    if user_id:
+        filter_cond = filter_cond & (reduced_df[BILLING_HOUR_EMPLOYEE_ID] == user_id)
+    if position_id:
+        filter_cond = filter_cond & (reduced_df[proj_constants.SUBPOSITION_ID] == position_id)
+    return reduced_df.loc[filter_cond, :]

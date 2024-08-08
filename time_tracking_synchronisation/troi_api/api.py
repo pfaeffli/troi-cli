@@ -4,8 +4,6 @@ from typing import List, Optional, Tuple, Generic
 
 from requests.auth import HTTPBasicAuth
 
-from .hours import create_billing_hour_payload
-
 
 class Client:
     def __init__(self, url: str, username: str, api_token: str):
@@ -63,3 +61,40 @@ class Client:
         data = create_billing_hour_payload(client_id, user_id, task_id, date, hours, remark)
         _, e = self._request("PUT", endpoint, json_payload=data)
         return e
+
+
+TROI_BILLING_HOUR_CALCULATION_POSITION = "CalculationPosition"
+TROI_BILLING_HOUR_CALCULATION_POSITION_ID = "Id"
+TROI_BILLING_HOUR_CALCULATION_POSITION_PATH = "Path"
+TROI_CLIENT = "Client"
+TROI_CLIENT_ID = "Id"
+TROI_CLIENT_PATH = "Path"
+TROI_BILLING_HOUR_DATE = "Date"
+TROI_BILLING_HOUR_EMPLOYEE = "Employee"
+TROI_BILLING_HOUR_EMPLOYEE_ID = "Id"
+TROI_BILLING_HOUR_EMPLOYEE_PATH = "Path"
+TROI_BILLING_HOUR_QUANTITY = "Quantity"
+TROI_BILLING_HOUR_REMARK = "Remark"
+
+
+def create_billing_hour_payload(client_id: int, user_id: int, postion_id: int, date: datetime, hours: float,
+                                remark: str) -> dict:
+    billing_hour = {
+        TROI_BILLING_HOUR_DATE: date.strftime("%Y-%m-%d"),
+        TROI_BILLING_HOUR_QUANTITY: hours,
+        TROI_BILLING_HOUR_REMARK: remark,
+        TROI_BILLING_HOUR_EMPLOYEE: {
+            TROI_BILLING_HOUR_EMPLOYEE_ID: user_id,
+            TROI_BILLING_HOUR_EMPLOYEE_PATH: f"/employees/{user_id}"
+        },
+        TROI_BILLING_HOUR_CALCULATION_POSITION: {
+            TROI_BILLING_HOUR_CALCULATION_POSITION_ID: postion_id,
+            TROI_BILLING_HOUR_CALCULATION_POSITION_PATH: f"/calculationPositions/{postion_id}"
+        },
+        TROI_CLIENT: {
+            TROI_CLIENT_ID: client_id,
+            "Id1": client_id,
+            TROI_CLIENT_PATH: f"/clients/{client_id}"
+        }
+    }
+    return billing_hour

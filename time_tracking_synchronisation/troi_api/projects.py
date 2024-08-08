@@ -12,6 +12,7 @@ TROI_SUBPROJECT_NAME = "Name"
 TROI_SUBPOSITION_ID = "Id"
 TROI_SUBPOSITION_NAME = "Name"
 
+CLIENT_ID = "client_id"
 PROJECT_ID = "project_id"
 PROJECT_NAME = "project_name"
 PROJECT_STATE = "project_state"
@@ -23,7 +24,8 @@ SUBPOSITION_NAME = "subposition_name"
 
 def _get_projects(client: Client) -> pd.DataFrame:
     content, error = client.list_projects(client_id=3)
-
+    if content is None:
+        raise error
     df = pd.DataFrame([pd.Series(r) for r in content])
     df[PROJECT_STATE] = df.Status.apply(lambda s: s[TROI_PROJECT_STATE_NAME])
     df.head(1)
@@ -35,7 +37,10 @@ def _get_projects(client: Client) -> pd.DataFrame:
 
 
 def _get_subpositions(client: Client, project: pd.Series) -> pd.DataFrame:
-    content, exception = client.list_calc_pos(3, project[PROJECT_ID])
+    content, error = client.list_calc_pos(3, project[PROJECT_ID])
+    if content is None:
+        raise error
+
     df = pd.DataFrame([pd.Series(r) for r in content])
 
     df[PROJECT_ID] = df.Project.apply(lambda p: p[TROI_PROJECT_ID])

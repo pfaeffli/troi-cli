@@ -3,11 +3,12 @@ import unittest
 import pandas as pd
 
 from tests.tools.mock_api_client import MockClient
+from tests.tools.mocked_client_testcase import MockedClientTestCase
 from time_tracking_synchronisation.troi_api.projects import get_all_positions, ProjectState, SUBPOSITION_NAME, \
     SUBPOSITION_ID, SUBPROJECT_NAME, SUBPROJECT_ID, PROJECT_STATE, PROJECT_NAME, PROJECT_ID
 
 
-class ProjectsTestCase(unittest.TestCase):
+class ProjectsTestCase(MockedClientTestCase):
     def setUp(self):
         self.client = MockClient()
         self.client.setup_add_project(id=1, name="project1", project_status=ProjectState.closed)
