@@ -1,0 +1,4 @@
+    credentials:
+      url: "https://jaywalker.troi.software/api/v2/rest"
+      username: "your_username"
+      api_token: "your_api_token"

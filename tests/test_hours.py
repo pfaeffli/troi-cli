@@ -9,6 +9,15 @@ from time_tracking_synchronisation.troi_api.hours import BILLING_HOUR_EMPLOYEE_I
     BILLING_HOUR_QUANTITY, BILLING_HOUR_TAGS, BILLING_HOUR_ANNOTATION, get_billing_hours
 
 
+class GetBillingHoursEmptyTestCase(MockedClientTestCase):
+    def test_billing_hours_for_day_empty(self):
+        df = get_billing_hours(client=self.client, project_id=1, client_id=3, user_id=1, position_id=211,
+                               date_from=datetime(2024, 1, 1),
+                               date_to=datetime(2024, 1, 2))
+
+        self.assertTrue(df.empty)
+
+
 class GetBillingHoursTestCase(MockedClientTestCase):
     def setUp(self):
         super().setUp()

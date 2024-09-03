@@ -33,6 +33,8 @@ def get_billing_hours(
         raise error
 
     df = pd.DataFrame([pd.Series(r) for r in content])
+    if df.empty:
+        return df
     # df[proj_constants.CLIENT_ID] = df[proj_constants.TROI_CLIENT][proj_constants.TROI_CLIENT_ID]
     df[proj_constants.SUBPOSITION_ID] = df[constants.TROI_BILLING_HOUR_CALCULATION_POSITION].apply(lambda x: x[
         constants.TROI_BILLING_HOUR_CALCULATION_POSITION_ID])
