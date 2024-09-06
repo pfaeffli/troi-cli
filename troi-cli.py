@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
-from datetime import datetime, date
+from datetime import datetime
 
-import click
 import click_completion
-import os
-import pandas as pd
 import yaml
-from time_tracking_synchronisation.troi_api.projects import get_all_positions
-from time_tracking_synchronisation.troi_api.hours import get_billing_hours
+
 from time_tracking_synchronisation.troi_api.api import Client
+from time_tracking_synchronisation.troi_api.hours import add_billing_entry
+from time_tracking_synchronisation.troi_api.hours import get_billing_hours
+from time_tracking_synchronisation.troi_api.projects import get_all_positions
+
 # Initialize click_completion for bash
 click_completion.init()
+
 
 def load_config():
     with open("config.yaml", "r") as ymlfile:
@@ -18,7 +19,27 @@ def load_config():
     return cfg['credentials']
 
 
+import pandas as pd
+import os
 import sys
+import click
+
+
+def _get_terminal_size():
+    """Retrieve the terminal size or return default size on error."""
+    try:
+        terminal_width, terminal_height = os.get_terminal_size()
+    except OSError:
+        return None
+    return terminal_width, terminal_height
+
+
+def _display_output(output: str):
+    """Display the DataFrame output with proper handling for terminal and non-terminal environments."""
+    if sys.stdout.isatty():
+        click.echo_via_pager(output)
+    print(output)
+
 
 
 def format_dataframe(df: pd.DataFrame):
@@ -26,34 +47,24 @@ def format_dataframe(df: pd.DataFrame):
     if df.empty:
         click.echo("No data found.")
         return
-    try:
-        term_width, term_height = os.get_terminal_size()
-    except OSError:
+
+    terminal_size = _get_terminal_size()
+    if terminal_size is None:
         print(df.to_string(index=False))
         return
 
-    avg_col_width = max(df.apply(lambda x: x.astype(str).map(len).max())) + 2  # calculate average column width
-    if df.shape[1] * avg_col_width > term_width:
-        max_width = term_width
-        for col_width in range(max_width, 30, -5):  # reduce width to fit in terminal, down to 30 characters
+    terminal_width, _ = terminal_size
+    column_width = max(df.apply(lambda x: x.astype(str).map(len).max())) + 2  # calculate maximum column width
+
+    if df.shape[1] * column_width > terminal_width:
+        for col_width in range(terminal_width, 30, -5):  # reduce width to fit in terminal, down to 30 characters
             pd.set_option('display.max_colwidth', col_width)
-            output = df.to_string(index=False)
-            if len(output.split('\n')[0]) <= term_width:
-                if sys.stdout.isatty():
-                    click.echo_via_pager(output)  # use pager to enable scrolling if terminal
-                else:
-                    print(output)
-                break
-        else:
-            if sys.stdout.isatty():
-                click.echo_via_pager(df.to_string(index=False))
-            else:
-                print(df.to_string(index=False))
+            if len(df.to_string(index=False).split('\n')[0]) <= terminal_width:
+                _display_output(df.to_string(index=False))
+                return
+        _display_output(df.to_string(index=False))
     else:
-        if sys.stdout.isatty():
-            click.echo_via_pager(df.to_string(index=False))
-        else:
-            print(df.to_string(index=False))
+        _display_output(df.to_string(index=False))
 
 
 @click.group()
@@ -93,6 +104,47 @@ def billing_hours(project_id, date_from, date_to, client_id, user_id, position_i
     format_dataframe(billing_hours_df)
 
 
+@cli.command()
+@click.argument('hours', type=float)
+@click.argument('tags', nargs=-1, type=str)
+@click.option('-d', '--date_from', type=click.DateTime(), default=lambda: datetime.now(), required=False,
+              help="Start date for billing hours")
+@click.option('-t', '--task_id', type=int, help="Task ID")
+@click.option('-u', '--user_id', type=int, help="User ID")
+@click.option('-c', '--client_id', type=int, help="Client ID")
+@click.option('-m', '--remark', type=str, help="Annotation remark")
+def add_entry(date_from, hours, tags, task_id, user_id, client_id, remark):
+    """Add a billing entry."""
+    credentials = load_config()
+
+    # Use default values from config if not provided
+    task_id = task_id or credentials.get('task_id')
+    user_id = user_id or credentials.get('user_id')
+    client_id = client_id or credentials.get('client_id', 3)
+
+    # Parse date
+    if date_from is None:
+        billing_date = datetime.now()
+    else:
+        billing_date = date_from.date()
+
+    client = Client(credentials['url'], credentials['username'], credentials['api_token'])
+
+    try:
+        add_billing_entry(
+            client=client,
+            date=billing_date,
+            hours=hours,
+            tags=tags,
+            task_id=task_id,
+            user_id=user_id,
+            client_id=client_id,
+            annotation=remark)
+    except Exception as e:
+        click.echo(f"Error: {e}")
+    else:
+        click.echo("Billing entry added successfully.")
+
+
 if __name__ == '__main__':
     cli()
-

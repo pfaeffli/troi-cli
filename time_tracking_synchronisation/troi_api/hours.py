@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 
 import pandas as pd
 
@@ -55,3 +55,36 @@ def get_billing_hours(
     if position_id:
         filter_cond = filter_cond & (reduced_df[proj_constants.SUBPOSITION_ID] == position_id)
     return reduced_df.loc[filter_cond, :]
+
+
+def get_remark(tags: List[str] = None,
+        annotation: str = None):
+    remark = ""
+    if tags:
+        remark += ", ".join(tags)
+
+    if annotation:
+        if len(remark) > 0:
+            remark += " "
+        remark += f"@{annotation}"
+    return remark
+
+
+def add_billing_entry(
+        client: Client,
+        task_id: int,
+        date: datetime,
+        hours: float,
+        user_id: int,
+        tags: List[str] = None,
+        annotation: str = None,
+        client_id: int = 3,
+):
+    error = client.add_billing_hours(client_id=client_id,
+                             user_id=user_id,
+                             task_id=task_id,
+                             date=date,
+                             hours=hours,
+                             remark=get_remark(tags, annotation))
+    if error is not None:
+        raise error

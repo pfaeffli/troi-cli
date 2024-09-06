@@ -6,7 +6,7 @@ import pandas as pd
 import time_tracking_synchronisation.troi_api.projects as constants
 from tests.tools.mocked_client_testcase import MockedClientTestCase
 from time_tracking_synchronisation.troi_api.hours import BILLING_HOUR_EMPLOYEE_ID, BILLING_HOUR_DATE, \
-    BILLING_HOUR_QUANTITY, BILLING_HOUR_TAGS, BILLING_HOUR_ANNOTATION, get_billing_hours
+    BILLING_HOUR_QUANTITY, BILLING_HOUR_TAGS, BILLING_HOUR_ANNOTATION, get_billing_hours, add_billing_entry, get_remark
 
 
 class GetBillingHoursEmptyTestCase(MockedClientTestCase):
@@ -138,6 +138,55 @@ class GetBillingHoursTestCase(MockedClientTestCase):
                                date_to=datetime(2024, 1, 2))
 
         self.assertDataFrameEqual(expected_df, df)
+
+
+class AddBillingEntryTestCase(MockedClientTestCase):
+    def test_get_remark(self):
+        expected_remark = "tag1, tag2, tag3 @Some text"
+        remark = get_remark(["tag1", "tag2", "tag3"], "Some text")
+
+        self.assertEqual(expected_remark, remark)
+
+    def test_get_remark_empty(self):
+        expected_remark = ""
+        remark = get_remark(None, None)
+        self.assertEqual(expected_remark, remark)
+
+    def test_get_remark_no_tags(self):
+        expected_remark = "@No tags"
+        remark = get_remark([], "No tags")
+        self.assertEqual(expected_remark, remark)
+
+    def test_get_remark_no_text(self):
+        expected_remark = "tag1, tag2, tag3"
+        remark = get_remark(["tag1", "tag2", "tag3"], None)
+        self.assertEqual(expected_remark, remark)
+
+    def test_add_billing_entry(self):
+        add_billing_entry(client=self.client,
+                          task_id=1,
+                          date=datetime(2024, 1, 1),
+                          hours=1.0,
+                          user_id=1,
+                          tags=["tag1", "tag2", "tag3"],
+                          annotation="Some text",
+                          client_id=3)
+
+        self.assertEqual(len(self.client.added_billing_hours), 1)
+
+    def test_add_billing_entry_error(self):
+        self.client.set_error(ValueError("test"))
+
+        with self.assertRaises(ValueError):
+            add_billing_entry(client=self.client,
+                              task_id=1,
+                              date=datetime(2024, 1, 1),
+                              hours=1.0,
+                              user_id=1,
+                              tags=["tag1", "tag2", "tag3"],
+                              annotation="Some text",
+                              client_id=3
+            )
 
 
 if __name__ == '__main__':
