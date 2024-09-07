@@ -25,6 +25,10 @@ import sys
 import click
 
 
+def current_date():
+    return datetime.now().strftime("%Y-%m-%d")
+
+
 def _get_terminal_size():
     """Retrieve the terminal size or return default size on error."""
     try:
@@ -83,8 +87,9 @@ def all_positions():
 
 @cli.command()
 @click.argument('project_id', type=int)
-@click.argument('date_from', type=click.DateTime(), default=lambda: datetime.now(), required=False)
-@click.option('--date_to', type=click.DateTime(), default=None, help="End date for billing hours")
+@click.argument('date_from', type=click.DateTime(formats=['%Y-%m-%d']), default=current_date,
+                required=False)
+@click.option('--date_to', type=click.DateTime(formats=['%Y-%m-%d']), default=None, help="End date for billing hours")
 @click.option('--client_id', type=int, default=3, help="Client ID (default is 3)")
 @click.option('--user_id', type=int, default=None, help="User ID")
 @click.option('--position_id', type=int, default=None, help="Position ID")
@@ -107,7 +112,8 @@ def billing_hours(project_id, date_from, date_to, client_id, user_id, position_i
 @cli.command()
 @click.argument('hours', type=float)
 @click.argument('tags', nargs=-1, type=str)
-@click.option('-d', '--date_from', type=click.DateTime(), default=lambda: datetime.now(), required=False,
+@click.option('-d', '--date_from', type=click.DateTime(formats=['%Y-%m-%d']), default=current_date,
+              required=False,
               help="Start date for billing hours")
 @click.option('-t', '--task_id', type=int, help="Task ID")
 @click.option('-u', '--user_id', type=int, help="User ID")
@@ -122,9 +128,17 @@ def add_entry(date_from, hours, tags, task_id, user_id, client_id, remark):
     user_id = user_id or credentials.get('user_id')
     client_id = client_id or credentials.get('client_id', 3)
 
+    if task_id is None:
+        click.echo("Error: Task Id must be set. Provide the --task_id argument.")
+        raise click.Abort()
+
+    if user_id is None:
+        click.echo("Error: User Id must be set. Provide the --user_id argument.")
+        raise click.Abort()
+
     # Parse date
     if date_from is None:
-        billing_date = datetime.now()
+        billing_date = current_date()
     else:
         billing_date = date_from.date()
 

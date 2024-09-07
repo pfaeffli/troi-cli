@@ -18,7 +18,7 @@ PROJECT_NAME = "project_name"
 PROJECT_STATE = "project_state"
 SUBPROJECT_ID = "subproject_id"
 SUBPROJECT_NAME = "subproject_name"
-SUBPOSITION_ID = "subposition_id"
+SUBPOSITION_ID = "task_id"
 SUBPOSITION_NAME = "subposition_name"
 
 

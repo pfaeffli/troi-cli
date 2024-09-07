@@ -6,7 +6,8 @@ import pandas as pd
 import time_tracking_synchronisation.troi_api.projects as constants
 from tests.tools.mocked_client_testcase import MockedClientTestCase
 from time_tracking_synchronisation.troi_api.hours import BILLING_HOUR_EMPLOYEE_ID, BILLING_HOUR_DATE, \
-    BILLING_HOUR_QUANTITY, BILLING_HOUR_TAGS, BILLING_HOUR_ANNOTATION, get_billing_hours, add_billing_entry, get_remark
+    BILLING_HOUR_QUANTITY, BILLING_HOUR_TAGS, BILLING_HOUR_ANNOTATION, get_billing_hours, add_billing_entry, get_remark, \
+    BILLING_HOUR_RECORD_ID, BILLING_HOUR_DISPLAY_PATH
 
 
 class GetBillingHoursEmptyTestCase(MockedClientTestCase):
@@ -67,6 +68,8 @@ class GetBillingHoursTestCase(MockedClientTestCase):
     def test_billing_hours_for_day(self):
         expected_df = pd.DataFrame(
             {
+                BILLING_HOUR_RECORD_ID: [1, 2],
+                BILLING_HOUR_DISPLAY_PATH: ["project / subproject / position"] * 2,
                 constants.SUBPOSITION_ID: [211, 211],
                 BILLING_HOUR_EMPLOYEE_ID: [1, 1],
                 BILLING_HOUR_DATE: ["2024-01-01", "2024-01-01"],
@@ -85,6 +88,8 @@ class GetBillingHoursTestCase(MockedClientTestCase):
     def test_billing_hours_user_not_set(self):
         expected_df = pd.DataFrame(
             {
+                BILLING_HOUR_RECORD_ID: [1, 2, 3],
+                BILLING_HOUR_DISPLAY_PATH: ["project / subproject / position"] * 3,
                 constants.SUBPOSITION_ID: [211, 211, 211],
                 BILLING_HOUR_EMPLOYEE_ID: [1, 1, 2],
                 BILLING_HOUR_DATE: ["2024-01-01", "2024-01-01", "2024-01-01"],
@@ -104,6 +109,8 @@ class GetBillingHoursTestCase(MockedClientTestCase):
     def test_billing_hours_position_id_not_set(self):
         expected_df = pd.DataFrame(
             {
+                BILLING_HOUR_RECORD_ID: [0, 1, 2],
+                BILLING_HOUR_DISPLAY_PATH: ["project / subproject / position"] * 3,
                 constants.SUBPOSITION_ID: [111, 211, 211],
                 BILLING_HOUR_EMPLOYEE_ID: [1, 1, 1],
                 BILLING_HOUR_DATE: ["2024-01-01", "2024-01-01", "2024-01-01"],
@@ -123,6 +130,8 @@ class GetBillingHoursTestCase(MockedClientTestCase):
     def test_billing_hours_user_and_position_id_not_set(self):
         expected_df = pd.DataFrame(
             {
+                BILLING_HOUR_RECORD_ID: [0, 1, 2, 3],
+                BILLING_HOUR_DISPLAY_PATH: ["project / subproject / position"] * 4,
                 constants.SUBPOSITION_ID: [111, 211, 211, 211],
                 BILLING_HOUR_EMPLOYEE_ID: [1, 1, 1, 2],
                 BILLING_HOUR_DATE: ["2024-01-01", "2024-01-01", "2024-01-01", "2024-01-01"],

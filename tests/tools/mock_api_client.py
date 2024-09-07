@@ -5,7 +5,8 @@ from typing import List, Optional, Tuple
 import time_tracking_synchronisation.troi_api as client
 import time_tracking_synchronisation.troi_api.projects as const_projects
 from tests.constant import TROI_PROJECT_RESPONSE_ITEM, TROI_PROJECT_CALC_POSITION_RESPONSE_ITEM, TROI_BILLING_HOURS
-from time_tracking_synchronisation.troi_api.api import create_billing_hour_payload
+from time_tracking_synchronisation.troi_api.api import create_billing_hour_payload, TROI_BILLING_HOUR_RECORD_ID, \
+    TROI_BILLING_HOUR_DISPLAY_PATH
 
 
 class MockClientError(Exception):
@@ -59,8 +60,10 @@ class MockClient(client.api.Client):
         self.calculation_positions.append(calc_pos_template)
 
     def setup_billing_hours(self,
+                            record_id: Optional[int] = None,
                             client_id: int = 3,
                             user_id: int = 1,
+                            display_path: str = "project / subproject / position",
                             project_id: int = 1,
                             position_id: int = 111,
                             date: datetime = datetime(2024, 1, 1),
@@ -70,7 +73,10 @@ class MockClient(client.api.Client):
         update = create_billing_hour_payload(client_id=client_id, user_id=user_id, postion_id=position_id, date=date, hours=hours,
                                              remark=remark)
         billing_hour_template = deep_update(billing_hour_template, update)
-
+        if record_id is None:
+            record_id = len(self.billing_hours)
+        billing_hour_template[TROI_BILLING_HOUR_RECORD_ID] = record_id
+        billing_hour_template[TROI_BILLING_HOUR_DISPLAY_PATH] = display_path
         self.billing_hours.append(billing_hour_template)
 
     def set_error(self, error: Exception):
