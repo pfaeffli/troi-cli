@@ -94,3 +94,26 @@ def add_billing_entry(
                                      remark=get_remark(tags, annotation))
     if error is not None:
         raise error
+
+
+def update_billing_entry(
+        client: Client,
+        client_id: int,
+        record_id: int,
+        date: datetime,
+        hours: float,
+        user_id: int,
+        task_id: int,
+        tags: List[str] = None,
+        annotation: str = None,
+):
+    error = client.update_billing_hours(
+        client_id=client_id,
+        user_id=user_id,
+        task_id=task_id,
+        record_id=record_id,
+        date=date,
+        hours=hours,
+        remark=get_remark(tags, annotation))
+    if error is not None:
+        raise error

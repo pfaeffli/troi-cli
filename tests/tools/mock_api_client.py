@@ -33,6 +33,7 @@ class MockClient(client.api.Client):
         self.calculation_positions = []
         self.billing_hours = []
         self.added_billing_hours = []
+        self.updated_billing_hours = []
         self.error = None
 
     def setup_add_project(self, id: int = 1, name: str = "project",
@@ -130,6 +131,11 @@ class MockClient(client.api.Client):
 
     def update_billing_hours(self, client_id: int, user_id: int, task_id: int, record_id: int, date: datetime,
                              hours: float, remark: str) -> Optional[Exception]:
+        self.updated_billing_hours.append(
+            create_billing_hour_payload(client_id=client_id, user_id=user_id, postion_id=task_id, date=date,
+                                        hours=hours,
+                                        remark=remark)
+        )
         if self.error:
             return self.error
         return None

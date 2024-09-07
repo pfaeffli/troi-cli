@@ -5,7 +5,7 @@ import click_completion
 import yaml
 
 from time_tracking_synchronisation.troi_api.api import Client
-from time_tracking_synchronisation.troi_api.hours import add_billing_entry
+from time_tracking_synchronisation.troi_api.hours import add_billing_entry, update_billing_entry
 from time_tracking_synchronisation.troi_api.hours import get_billing_hours
 from time_tracking_synchronisation.troi_api.projects import get_all_positions
 
@@ -158,6 +158,67 @@ def add_entry(date_from, hours, tags, task_id, user_id, client_id, remark):
         click.echo(f"Error: {e}")
     else:
         click.echo("Billing entry added successfully.")
+
+
+@cli.command()
+@click.argument('record_id', type=int)
+@click.argument('hours', type=float)
+@click.argument('tags', nargs=-1, type=str)
+@click.option('-d', '--date_from', type=click.DateTime(formats=['%Y-%m-%d']), default=current_date,
+              required=False,
+              help="Start date for billing hours")
+@click.option('-t', '--task_id', type=int, help="Task ID")
+@click.option('-u', '--user_id', type=int, help="User ID")
+@click.option('-c', '--client_id', type=int, help="Client ID")
+@click.option('-m', '--remark', type=str, help="Annotation remark")
+def update_entry(date_from, hours, tags, task_id, user_id, client_id, record_id, remark):
+    """Update a billing entry."""
+    credentials = load_config()
+
+    # Use default values from config if not provided
+    task_id = task_id or credentials.get('task_id')
+    user_id = user_id or credentials.get('user_id')
+    client_id = client_id or credentials.get('client_id', 3)
+    record_id = record_id or credentials.get('record_id')
+
+    if task_id is None:
+        click.echo("Error: Task Id must be set. Provide the --task_id argument.")
+        raise click.Abort()
+
+    if user_id is None:
+        click.echo("Error: User Id must be set. Provide the --user_id argument.")
+        raise click.Abort()
+
+    if record_id is None:
+        click.echo("Error: Record Id must be set. Provide the --record_id argument.")
+        raise click.Abort()
+
+    # Parse date
+    if date_from is None:
+        billing_date = current_date()
+    else:
+        billing_date = date_from.date()
+
+    client = Client(credentials['url'], credentials['username'], credentials['api_token'])
+
+    try:
+        update_billing_entry(
+            client=client,
+            date=billing_date,
+            hours=hours,
+            tags=tags,
+            task_id=task_id,
+            user_id=user_id,
+            client_id=client_id,
+            record_id=record_id,
+            annotation=remark)
+    except Exception as e:
+        click.echo(f"Error: {e}")
+    else:
+        click.echo("Billing entry updated successfully.")
+        
+        
+
 
 
 if __name__ == '__main__':

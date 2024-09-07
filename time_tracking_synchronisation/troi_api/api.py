@@ -1,7 +1,7 @@
-import requests
 from datetime import datetime
-from typing import List, Optional, Tuple, Generic
+from typing import List, Optional, Tuple
 
+import requests
 from requests.auth import HTTPBasicAuth
 
 

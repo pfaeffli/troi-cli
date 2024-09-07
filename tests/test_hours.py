@@ -7,7 +7,7 @@ import time_tracking_synchronisation.troi_api.projects as constants
 from tests.tools.mocked_client_testcase import MockedClientTestCase
 from time_tracking_synchronisation.troi_api.hours import BILLING_HOUR_EMPLOYEE_ID, BILLING_HOUR_DATE, \
     BILLING_HOUR_QUANTITY, BILLING_HOUR_TAGS, BILLING_HOUR_ANNOTATION, get_billing_hours, add_billing_entry, get_remark, \
-    BILLING_HOUR_RECORD_ID, BILLING_HOUR_DISPLAY_PATH
+    BILLING_HOUR_RECORD_ID, BILLING_HOUR_DISPLAY_PATH, update_billing_entry
 
 
 class GetBillingHoursEmptyTestCase(MockedClientTestCase):
@@ -188,6 +188,34 @@ class AddBillingEntryTestCase(MockedClientTestCase):
 
         with self.assertRaises(ValueError):
             add_billing_entry(client=self.client,
+                              task_id=1,
+                              date=datetime(2024, 1, 1),
+                              hours=1.0,
+                              user_id=1,
+                              tags=["tag1", "tag2", "tag3"],
+                              annotation="Some text",
+                              client_id=3
+            )
+
+
+class UpdateBillingEntryTestCase(MockedClientTestCase):
+    def test_update_billing_entry(self):
+        update_billing_entry(client=self.client,
+                          record_id=1,
+                          task_id=1,
+                          date=datetime(2024, 1, 1),
+                          hours=1.0,
+                          user_id=1,
+                          tags=["tag1", "tag2", "tag3"],
+                          annotation="Some text",
+                          client_id=3
+                          )
+    def test_update_billing_entry_error(self):
+        self.client.set_error(ValueError("test"))
+
+        with self.assertRaises(ValueError):
+            update_billing_entry(client=self.client,
+                                 record_id=1,
                               task_id=1,
                               date=datetime(2024, 1, 1),
                               hours=1.0,
