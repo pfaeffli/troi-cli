@@ -2,7 +2,7 @@ from enum import Enum
 
 import pandas as pd
 
-from time_tracking_synchronisation.troi_api.api import Client
+from troi_billing.troi_api.api import Client
 
 TROI_PROJECT_NAME = "Name"
 TROI_PROJECT_STATE_NAME = "Name"

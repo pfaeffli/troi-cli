@@ -3,9 +3,9 @@ from typing import Optional, List
 
 import pandas as pd
 
-import time_tracking_synchronisation.troi_api.api as constants
-import time_tracking_synchronisation.troi_api.projects as proj_constants
-from time_tracking_synchronisation.troi_api.api import Client
+import troi_billing.troi_api.api as constants
+import troi_billing.troi_api.projects as proj_constants
+from troi_billing.troi_api.api import Client
 
 BILLING_HOUR_RECORD_ID = "record_id"
 BILLING_HOUR_DISPLAY_PATH = "display_path"

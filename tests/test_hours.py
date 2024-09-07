@@ -3,9 +3,9 @@ from datetime import datetime
 
 import pandas as pd
 
-import time_tracking_synchronisation.troi_api.projects as constants
+import troi_billing.troi_api.projects as constants
 from tests.tools.mocked_client_testcase import MockedClientTestCase
-from time_tracking_synchronisation.troi_api.hours import BILLING_HOUR_EMPLOYEE_ID, BILLING_HOUR_DATE, \
+from troi_billing.troi_api.hours import BILLING_HOUR_EMPLOYEE_ID, BILLING_HOUR_DATE, \
     BILLING_HOUR_QUANTITY, BILLING_HOUR_TAGS, BILLING_HOUR_ANNOTATION, get_billing_hours, add_billing_entry, get_remark, \
     BILLING_HOUR_RECORD_ID, BILLING_HOUR_DISPLAY_PATH, update_billing_entry
 

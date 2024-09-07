@@ -4,10 +4,10 @@ from datetime import datetime
 import click_completion
 import yaml
 
-from time_tracking_synchronisation.troi_api.api import Client
-from time_tracking_synchronisation.troi_api.hours import add_billing_entry, update_billing_entry
-from time_tracking_synchronisation.troi_api.hours import get_billing_hours
-from time_tracking_synchronisation.troi_api.projects import get_all_positions
+from troi_billing.troi_api.api import Client
+from troi_billing.troi_api.hours import add_billing_entry, update_billing_entry
+from troi_billing.troi_api.hours import get_billing_hours
+from troi_billing.troi_api.projects import get_all_positions
 
 # Initialize click_completion for bash
 click_completion.init()
