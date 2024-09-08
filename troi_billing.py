@@ -7,14 +7,14 @@ import click
 import click_completion
 import pandas as pd
 import yaml
-from troi_billing.troi_api.api import Client
-from troi_billing.troi_api.hours import add_billing_entry, update_billing_entry, get_billing_hours
-from troi_billing.troi_api.projects import get_all_positions
+from troi.troi_api.api import Client
+from troi.troi_api.hours import add_billing_entry, update_billing_entry, get_billing_hours
+from troi.troi_api.projects import get_all_positions
 
 # Initialize click_completion for bash
 click_completion.init()
 
-CONFIG_FILE = "config.yaml"
+CONFIG_FILE = os.path.join(os.path.expanduser("~"), ".config", "troi_billing", "config.yaml")
 DEFAULT_CLIENT_ID = 3
 DEFAULT_DATE_FORMAT = "%Y-%m-%d"
 
@@ -74,6 +74,14 @@ def format_dataframe(df: pd.DataFrame):
 @click.group()
 def cli():
     pass
+
+
+@cli.command()
+def install_completion():
+    """Install bash completion for this CLI."""
+    click.echo('Installing bash completion...')
+    click_completion.install()
+    click.echo('Bash completion installed. Please reload your shell or run `source ~/.bashrc`.')
 
 
 @cli.command()
@@ -163,4 +171,4 @@ def update_entry(date_from, hours, tags, task_id, user_id, client_id, record_id,
 
 
 if __name__ == '__main__':
-    cli()
+    cli(prog_name="troi-billing")

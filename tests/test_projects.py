@@ -4,7 +4,7 @@ import pandas as pd
 
 from tests.tools.mock_api_client import MockClient
 from tests.tools.mocked_client_testcase import MockedClientTestCase
-from troi_billing.troi_api.projects import get_all_positions, ProjectState, SUBPOSITION_NAME, \
+from troi.troi_api.projects import get_all_positions, ProjectState, SUBPOSITION_NAME, \
     SUBPOSITION_ID, SUBPROJECT_NAME, SUBPROJECT_ID, PROJECT_STATE, PROJECT_NAME, PROJECT_ID
 
 

@@ -3,7 +3,7 @@ from unittest.mock import patch
 from datetime import datetime
 
 from tests.constant import TROI_PROJECT_RESPONSE_ITEM, TROI_PROJECT_CALC_POSITION_RESPONSE_ITEM
-from troi_billing.troi_api.api import Client
+from troi.troi_api.api import Client
 
 
 class TestClient(unittest.TestCase):
@@ -11,7 +11,7 @@ class TestClient(unittest.TestCase):
     def setUp(self):
         self.client = Client('http://localhost', 'username', 'token')
 
-    @patch('troi_billing.troi_api.api.requests')
+    @patch('troi.troi_api.api.requests')
     def test_list_projects(self, mock_requests):
         # Setup
         mock_requests.request.return_value.json.return_value = [TROI_PROJECT_RESPONSE_ITEM]
@@ -23,7 +23,7 @@ class TestClient(unittest.TestCase):
         mock_requests.request.assert_called_once()
         self.assertIsNotNone(result)
 
-    @patch('troi_billing.troi_api.api.requests')
+    @patch('troi.troi_api.api.requests')
     def test_get_project(self, mock_requests):
         # Setup
         mock_requests.request.return_value.json.return_value = TROI_PROJECT_RESPONSE_ITEM
@@ -35,7 +35,7 @@ class TestClient(unittest.TestCase):
         mock_requests.request.assert_called_once()
         self.assertIsNotNone(result)
 
-    @patch('troi_billing.troi_api.api.requests')
+    @patch('troi.troi_api.api.requests')
     def test_list_calc_pos(self, mock_requests):
         # Setup
         mock_requests.request.return_value.json.return_value = [TROI_PROJECT_CALC_POSITION_RESPONSE_ITEM]
@@ -47,7 +47,7 @@ class TestClient(unittest.TestCase):
         mock_requests.request.assert_called_once()
         self.assertIsNotNone(result)
 
-    @patch('troi_billing.troi_api.api.requests')
+    @patch('troi.troi_api.api.requests')
     def test_list_billing_hours(self, mock_requests):
         # Setup
         mock_requests.request.return_value.json.return_value = {}
@@ -59,7 +59,7 @@ class TestClient(unittest.TestCase):
         mock_requests.request.assert_called_once()
         self.assertIsNotNone(result)
 
-    @patch('troi_billing.troi_api.api.requests')
+    @patch('troi.troi_api.api.requests')
     def test_add_billing_hours(self, mock_requests):
         # Setup
         mock_requests.request.return_value.json.return_value = {}
@@ -71,7 +71,7 @@ class TestClient(unittest.TestCase):
         mock_requests.request.assert_called_once()
         self.assertIsNone(result)
 
-    @patch('troi_billing.troi_api.api.requests')
+    @patch('troi.troi_api.api.requests')
     def test_update_billing_hours(self, mock_requests):
         # Setup
         mock_requests.request.return_value.json.return_value = {}

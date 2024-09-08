@@ -1,7 +1,7 @@
 import unittest
 
 from tests.tools.mock_api_client import MockClient
-from troi_billing.troi_api.projects import ProjectState
+from troi.troi_api.projects import ProjectState
 
 
 class MockedClientTestCase(unittest.TestCase):

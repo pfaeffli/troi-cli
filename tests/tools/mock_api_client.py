@@ -2,10 +2,10 @@ import copy
 from datetime import datetime
 from typing import List, Optional, Tuple
 
-import troi_billing.troi_api as client
-import troi_billing.troi_api.projects as const_projects
+import troi.troi_api as client
+import troi.troi_api.projects as const_projects
 from tests.constant import TROI_PROJECT_RESPONSE_ITEM, TROI_PROJECT_CALC_POSITION_RESPONSE_ITEM, TROI_BILLING_HOURS
-from troi_billing.troi_api.api import create_billing_hour_payload, TROI_BILLING_HOUR_RECORD_ID, \
+from troi.troi_api.api import create_billing_hour_payload, TROI_BILLING_HOUR_RECORD_ID, \
     TROI_BILLING_HOUR_DISPLAY_PATH
 
 
