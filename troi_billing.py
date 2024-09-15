@@ -130,6 +130,8 @@ def add_entry(date_from, hours, tags, task_id, user_id, client_id, remark):
 
     billing_date = date_from.date() if date_from is not None else current_date()
     client = get_client(credentials)
+    tags = list(tags) if tags is not None else []
+    tags = [v.strip().replace(',', '') for v in tags]
 
     try:
         add_billing_entry(client, task_id, billing_date, hours, user_id, tags, remark, client_id)
@@ -161,9 +163,20 @@ def update_entry(date_from, hours, tags, task_id, user_id, client_id, record_id,
 
     billing_date = date_from.date() if date_from is not None else current_date()
     client = get_client(credentials)
+    tags = list(tags) if tags is not None else []
+    tags = [v.strip().replace(',', '') for v in tags]
 
     try:
-        update_billing_entry(client, task_id, billing_date, hours, user_id, record_id, tags, annotation=remark)
+        update_billing_entry(
+            client=client,
+            client_id=client_id,
+            task_id=task_id,
+            date=billing_date,
+            hours=hours,
+            user_id=user_id,
+            record_id=record_id,
+            tags=tags,
+            annotation=remark)
     except Exception as e:
         click.echo(f"Error: {e}")
     else:
