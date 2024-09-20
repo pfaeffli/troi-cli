@@ -9,7 +9,7 @@ import pandas as pd
 import yaml
 from troi.troi_api.api import Client
 from troi.troi_api.hours import add_billing_entry, update_billing_entry, get_billing_hours
-from troi.troi_api.projects import get_all_positions
+from troi.troi_api.projects import get_all_positions, get_projects
 
 # Initialize click_completion for bash
 click_completion.init()
@@ -22,7 +22,7 @@ DEFAULT_DATE_FORMAT = "%Y-%m-%d"
 def load_config():
     with open(CONFIG_FILE, "r") as ymlfile:
         cfg = yaml.safe_load(ymlfile)
-    return cfg['credentials']
+    return cfg['credentials'], cfg['config'] if 'config' in cfg else {}
 
 
 def get_client(credentials):
@@ -44,8 +44,8 @@ def _get_terminal_size():
 def _display_output(output):
     if sys.stdout.isatty():
         click.echo_via_pager(output)
-    else:
-        print(output)
+
+    print(output)
 
 
 def format_dataframe(df: pd.DataFrame):
@@ -85,11 +85,25 @@ def install_completion():
 
 
 @cli.command()
-def all_positions():
-    """Get all positions."""
-    credentials = load_config()
+@click.option('--client_id', type=int, default=None, help="Client ID")
+def list_projects(client_id):
+    """List all projects not in state closed."""
+    credentials, config = load_config()
+    client_id = client_id or config.get('client_id', DEFAULT_CLIENT_ID)
     client = get_client(credentials)
-    positions_df = get_all_positions(client)
+    projects_df = get_projects(client, client_id)
+    format_dataframe(projects_df)
+
+
+@cli.command()
+@click.option('--client_id', type=int, default=None, help="Client ID")
+@click.option('--project_id', type=int, default=None, help="Client ID")
+def all_positions(client_id, project_id):
+    """Get all positions."""
+    credentials, config = load_config()
+    client_id = client_id or config.get('client_id', DEFAULT_CLIENT_ID)
+    client = get_client(credentials)
+    positions_df = get_all_positions(client, client_id, project_id)
     format_dataframe(positions_df)
 
 
@@ -98,12 +112,14 @@ def all_positions():
 @click.argument('date_from', type=click.DateTime(formats=[DEFAULT_DATE_FORMAT]), default=current_date, required=False)
 @click.option('--date_to', type=click.DateTime(formats=[DEFAULT_DATE_FORMAT]), default=None,
               help="End date for billing hours")
-@click.option('--client_id', type=int, default=DEFAULT_CLIENT_ID, help="Client ID (default is 3)")
+@click.option('--client_id', type=int, default=None, help="Client ID (default is 3)")
 @click.option('--user_id', type=int, default=None, help="User ID")
 @click.option('--position_id', type=int, default=None, help="Position ID")
 def billing_hours(project_id, date_from, date_to, client_id, user_id, position_id):
     """Get billing hours."""
-    credentials = load_config()
+    credentials, config = load_config()
+    client_id = client_id or config.get('client_id', DEFAULT_CLIENT_ID)
+    user_id = client_id or config.get('user_id')
     client = get_client(credentials)
     billing_hours_df = get_billing_hours(client, project_id, date_from, date_to, client_id, user_id, position_id)
     format_dataframe(billing_hours_df)
@@ -120,10 +136,10 @@ def billing_hours(project_id, date_from, date_to, client_id, user_id, position_i
 @click.option('-m', '--remark', type=str, help="Annotation remark")
 def add_entry(date_from, hours, tags, task_id, user_id, client_id, remark):
     """Add a billing entry."""
-    credentials = load_config()
+    credentials, config = load_config()
     task_id = task_id or credentials.get('task_id')
-    user_id = user_id or credentials.get('user_id')
-    client_id = client_id or credentials.get('client_id', DEFAULT_CLIENT_ID)
+    user_id = user_id or config.get('user_id')
+    client_id = client_id or config.get('client_id', DEFAULT_CLIENT_ID)
     if task_id is None or user_id is None:
         click.echo("Error: Task ID and User ID must be provided.")
         raise click.Abort()
@@ -153,10 +169,10 @@ def add_entry(date_from, hours, tags, task_id, user_id, client_id, remark):
 @click.option('-m', '--remark', type=str, help="Annotation remark")
 def update_entry(date_from, hours, tags, task_id, user_id, client_id, record_id, remark):
     """Update a billing entry."""
-    credentials = load_config()
+    credentials, config = load_config()
     task_id = task_id or credentials.get('task_id')
-    user_id = user_id or credentials.get('user_id')
-    client_id = client_id or credentials.get('client_id', DEFAULT_CLIENT_ID)
+    user_id = user_id or config.get('user_id')
+    client_id = client_id or config.get('client_id', DEFAULT_CLIENT_ID)
     if task_id is None or user_id is None or record_id is None:
         click.echo("Error: Task ID, User ID, and Record ID must be provided.")
         raise click.Abort()

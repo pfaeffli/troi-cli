@@ -1,6 +1,6 @@
 import copy
 from datetime import datetime
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Dict
 
 import troi.troi_api as client
 import troi.troi_api.projects as const_projects
@@ -47,13 +47,13 @@ class MockClient(client.api.Client):
     def setup_add_calc_pos(self, project_id: int = 1, subproject_id: int = 1, subproject_name: str = "subproject1",
                            position_id: int = 1, position_name: str = "calcposition1"):
         calc_pos_template = copy.deepcopy(TROI_PROJECT_CALC_POSITION_RESPONSE_ITEM)
-        projects, exception = self.get_project(project_id)
-        if len(projects) != 1:
+        project, exception = self.get_project(project_id)
+        if project is None:
             if exception:
                 raise exception
             else:
-                raise ValueError(f"Cannot handle zero or multiple entries with Id {project_id}. Found {len(projects)}.")
-        calc_pos_template["Project"] = projects[0]
+                raise ValueError(f"Project not found with Id {project_id}.")
+        calc_pos_template["Project"] = project
         calc_pos_template["Subproject"][const_projects.TROI_SUBPROJECT_ID] = subproject_id
         calc_pos_template["Subproject"][const_projects.TROI_SUBPROJECT_NAME] = subproject_name
         calc_pos_template[const_projects.TROI_SUBPOSITION_ID] = position_id
@@ -89,14 +89,14 @@ class MockClient(client.api.Client):
         # Fake project listing
         return self.projects, None
 
-    def get_project(self, project_id: int) -> Tuple[List[dict], Optional[Exception]]:
+    def get_project(self, project_id: int) -> Tuple[Dict, Optional[Exception]]:
         if self.error:
-            return [], self.error
+            return {}, self.error
         projects = [project for project in self.projects if project['Id'] == project_id]
         if len(projects) == 0:
-            return [], MockClientError(f"Project with Id {project_id} not found.")
+            return {}, MockClientError(f"Project with Id {project_id} not found.")
         else:
-            return projects, None
+            return projects[0], None
 
     # For simplicity's sake, all other methods also return fake data or None in case of the update and add functions
     def list_calc_pos(self, client_id: int, project_id: int) -> Tuple[List[dict], Optional[Exception]]:

@@ -21,7 +21,7 @@ def get_billing_hours(
         project_id: int,
         date_from: datetime,
         date_to: Optional[datetime] = None,
-        client_id: int = 3,
+        client_id: int = None,
         user_id: Optional[int] = None,
         position_id: Optional[int] = None,
 ) -> pd.DataFrame:
