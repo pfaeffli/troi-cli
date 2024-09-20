@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import Optional, Union
 
 import pandas as pd
 
@@ -22,22 +23,34 @@ SUBPOSITION_ID = "task_id"
 SUBPOSITION_NAME = "subposition_name"
 
 
-def _get_projects(client: Client) -> pd.DataFrame:
-    content, error = client.list_projects(client_id=3)
-    if content is None:
-        raise error
-    df = pd.DataFrame([pd.Series(r) for r in content])
+def _to_project_dataframe(content: Union[list, dict]) -> pd.DataFrame:
+    if isinstance(content, list):
+        df = pd.DataFrame([pd.Series(r) for r in content])
+    else:
+        df = pd.Series(content).to_frame().T
     df[PROJECT_STATE] = df.Status.apply(lambda s: s[TROI_PROJECT_STATE_NAME])
-    df.head(1)
     projects = df.loc[:, [TROI_PROJECT_ID, TROI_PROJECT_NAME, PROJECT_STATE]]
     return projects.loc[projects.loc[:, PROJECT_STATE] != ProjectState.closed.value, :].rename(columns={
         TROI_PROJECT_ID: PROJECT_ID,
         TROI_PROJECT_NAME: PROJECT_NAME,
     })
 
+def get_project(client: Client, project_id:int) -> pd.DataFrame:
+    content, error = client.get_project(project_id=project_id)
+    if content is None:
+        raise error
+    return _to_project_dataframe(content)
 
-def _get_subpositions(client: Client, project: pd.Series) -> pd.DataFrame:
-    content, error = client.list_calc_pos(3, project[PROJECT_ID])
+
+def get_projects(client: Client, client_id: int) -> pd.DataFrame:
+    content, error = client.list_projects(client_id=client_id)
+    if content is None:
+        raise error
+    return _to_project_dataframe(content)
+
+
+def _get_subpositions(client: Client, project_id: int, client_id: int) -> pd.DataFrame:
+    content, error = client.list_calc_pos(client_id, project_id)
     if content is None:
         raise error
 
@@ -50,11 +63,16 @@ def _get_subpositions(client: Client, project: pd.Series) -> pd.DataFrame:
     return df.loc[:, [PROJECT_ID, SUBPROJECT_ID, SUBPROJECT_NAME, SUBPOSITION_ID, SUBPOSITION_NAME]]
 
 
-def get_all_positions(client: Client) -> pd.DataFrame:
-    projects = _get_projects(client)
+def get_all_positions(client: Client, client_id: int, project_id: Optional[int] = None) -> pd.DataFrame:
     subpositions = []
-    for _, project in projects.iterrows():
-        subpositions.append(_get_subpositions(client, project))
+    if project_id:
+        projects = get_project(client, project_id=project_id)
+        subpositions.append(_get_subpositions(client, project_id=project_id, client_id=client_id))
+    else:
+        # Load all projects
+        projects = get_projects(client, client_id=client_id)
+        for _, project in projects.iterrows():
+            subpositions.append(_get_subpositions(client, project_id=project[PROJECT_ID], client_id=client_id))
 
     project_subpositions = pd.concat(subpositions)
     projects = projects.merge(project_subpositions, on=PROJECT_ID)

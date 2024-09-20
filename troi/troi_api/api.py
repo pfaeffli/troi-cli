@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Union
 
 import requests
 from requests.auth import HTTPBasicAuth
@@ -14,7 +14,7 @@ class Client:
         }
 
     def _request(self, method: str, endpoint: str, params: Optional[dict] = None,
-                 json_payload: Optional[dict] = None) -> Tuple[List[dict], Optional[Exception]]:
+                 json_payload: Optional[dict] = None) -> Tuple[Optional[Union[List[dict], dict]], Optional[Exception]]:
         url = self.base_url + endpoint
         try:
             response = requests.request(method, url, headers=self.headers, auth=self.auth, params=params,
@@ -29,7 +29,7 @@ class Client:
         values = {"clientId": client_id}
         return self._request("GET", endpoint, params=values)
 
-    def get_project(self, project_id: int) -> tuple[list[dict], Exception | None]:
+    def get_project(self, project_id: int) -> tuple[dict, Exception | None]:
         endpoint = f"/projects/{project_id}"
         return self._request("GET", endpoint)
 
