@@ -55,7 +55,7 @@ def get_billing_hours(
                  [BILLING_HOUR_RECORD_ID, BILLING_HOUR_DISPLAY_PATH, proj_constants.SUBPOSITION_ID,
                   BILLING_HOUR_EMPLOYEE_ID, BILLING_HOUR_DATE, BILLING_HOUR_QUANTITY,
                   BILLING_HOUR_TAGS, BILLING_HOUR_ANNOTATION]]
-    filter_cond = [True] * reduced_df.shape[0]
+    filter_cond = pd.Series([True] * reduced_df.shape[0], index=reduced_df.index)
     if user_id:
         filter_cond = filter_cond & (reduced_df[BILLING_HOUR_EMPLOYEE_ID] == user_id)
     if position_id:
