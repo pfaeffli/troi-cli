@@ -119,9 +119,16 @@ def billing_hours(project_id, date_from, date_to, client_id, user_id, position_i
     """Get billing hours."""
     credentials, config = load_config()
     client_id = client_id or config.get('client_id', DEFAULT_CLIENT_ID)
-    user_id = client_id or config.get('user_id')
+    user_id = user_id or config.get('user_id')
     client = get_client(credentials)
-    billing_hours_df = get_billing_hours(client, project_id, date_from, date_to, client_id, user_id, position_id)
+    billing_hours_df = get_billing_hours(
+        client=client,
+        project_id=project_id,
+        date_from=date_from,
+        date_to=date_to,
+        client_id=client_id,
+        user_id=user_id,
+        position_id=position_id)
     format_dataframe(billing_hours_df)
 
 
