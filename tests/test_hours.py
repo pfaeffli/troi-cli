@@ -18,6 +18,21 @@ class GetBillingHoursEmptyTestCase(MockedClientTestCase):
 
         self.assertTrue(df.empty)
 
+    def test_billing_hours_if_user_is_empty(self):
+        self.client.setup_billing_hours(
+            user_id=None,
+            position_id=211,
+            date=datetime(2024, 1, 1),
+            hours=2.0,
+            remark="@No tags"
+        )
+        df = get_billing_hours(client=self.client, project_id=1, client_id=3,
+                               date_from=datetime(2024, 1, 1),
+                               date_to=datetime(2024, 1, 2))
+
+        self.assertEqual(1, df.shape[0])
+        self.assertIsNone(df.iloc[0][BILLING_HOUR_EMPLOYEE_ID])
+
 
 class GetBillingHoursTestCase(MockedClientTestCase):
     def setUp(self):
@@ -224,7 +239,6 @@ class UpdateBillingEntryTestCase(MockedClientTestCase):
                               annotation="Some text",
                               client_id=3
             )
-
 
 if __name__ == '__main__':
     unittest.main()
