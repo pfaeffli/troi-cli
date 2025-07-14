@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional, List
+from typing import Optional, List, Union
 
 import pandas as pd
 
@@ -44,7 +44,7 @@ def get_billing_hours(
     df[BILLING_HOUR_RECORD_ID] = df[constants.TROI_BILLING_HOUR_RECORD_ID]
     df[BILLING_HOUR_DISPLAY_PATH] = df[constants.TROI_BILLING_HOUR_DISPLAY_PATH]
     df[BILLING_HOUR_EMPLOYEE_ID] = df[constants.TROI_BILLING_HOUR_EMPLOYEE].apply(
-        lambda x: x[constants.TROI_BILLING_HOUR_EMPLOYEE_ID])
+        lambda x: x[constants.TROI_BILLING_HOUR_EMPLOYEE_ID] if x is not None and constants.TROI_BILLING_HOUR_EMPLOYEE_ID in x else None)
     df[BILLING_HOUR_DATE] = pd.to_datetime(df[constants.TROI_BILLING_HOUR_DATE])
     df[BILLING_HOUR_QUANTITY] = df[constants.TROI_BILLING_HOUR_QUANTITY]
     tags_annotation = df[constants.TROI_BILLING_HOUR_REMARK].apply(
@@ -63,11 +63,11 @@ def get_billing_hours(
     return reduced_df.loc[filter_cond, :]
 
 
-def get_remark(tags: List[str] = None,
+def get_remark(tags: Union[str, List[str]] = None,
                annotation: str = None):
     remark = ""
     if tags:
-        remark += ", ".join(tags)
+        remark += ", ".join(tags) if isinstance(tags, List) else tags
 
     if annotation:
         if len(remark) > 0:

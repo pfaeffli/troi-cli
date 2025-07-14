@@ -7,6 +7,7 @@ import click
 import click_completion
 import pandas as pd
 import yaml
+from troi.common import load_config, get_client
 from troi.troi_api.api import Client
 from troi.troi_api.hours import add_billing_entry, update_billing_entry, get_billing_hours
 from troi.troi_api.projects import get_all_positions, get_projects
@@ -14,19 +15,8 @@ from troi.troi_api.projects import get_all_positions, get_projects
 # Initialize click_completion for bash
 click_completion.init()
 
-CONFIG_FILE = os.path.join(os.path.expanduser("~"), ".config", "troi_billing", "config.yaml")
 DEFAULT_CLIENT_ID = 3
 DEFAULT_DATE_FORMAT = "%Y-%m-%d"
-
-
-def load_config():
-    with open(CONFIG_FILE, "r") as ymlfile:
-        cfg = yaml.safe_load(ymlfile)
-    return cfg['credentials'], cfg['config'] if 'config' in cfg else {}
-
-
-def get_client(credentials):
-    return Client(credentials['url'], credentials['username'], credentials['api_token'])
 
 
 def current_date():
